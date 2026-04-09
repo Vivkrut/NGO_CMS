@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-5j@xjzyq0$t(@z9ihy&ko(bk3)zfb0z6*t$&+0u(c_*ygitzg-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "ngo-cms-bwvq.onrender.com"
+]
 
 
 # Application definition
@@ -128,3 +130,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+import os
+
+PORT = os.environ.get("PORT", "8000")
