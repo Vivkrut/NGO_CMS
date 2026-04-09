@@ -14,7 +14,7 @@ function Dashboard() {
       const userEmail = localStorage.getItem("email");
       setEmail(userEmail);
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
