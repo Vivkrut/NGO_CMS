@@ -1,8 +1,7 @@
- HEAD
 # Getting Started with Create React App
 
 #  NGO CMS - Login & Dashboard Module
- 7ba40c802596a0f2e30a42d1065b124ee948fa7d
+ 
 
 ##  Project Overview
 
@@ -96,12 +95,7 @@ npm start
 
 ---
 
- HEAD
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-# NGO_CMS
-This is my intern project  to make a CMS website for an NGO
-3e426135807faf5ea7d2431582b23340aaf3ca81
 ## 🔑 Test Credentials
 
 ```
@@ -116,4 +110,3 @@ Password: Veer@3201
 ## 👨‍💻 Author
 
 Vivek Chudasama
- 7ba40c802596a0f2e30a42d1065b124ee948fa7d
