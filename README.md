@@ -90,8 +90,8 @@ npm start
 
 ## 🌐 Live Demo
 
-* Frontend: https://your-app.vercel.app
-* Backend: https://your-backend.onrender.com
+* Frontend: https://ngo-cms-sigma.vercel.app/
+* Backend: https://ngo-cms-bwvq.onrender.com/login/
 
 ---
 
