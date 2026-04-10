@@ -1,8 +1,14 @@
-from django.contrib import admin
+from accounts.views import login_view, dashboard_view
 from django.urls import path
-from accounts.views import login_view
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Backend is running")
+
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('login/', login_view),
+    path('dashboard/', dashboard_view),
+    path('', home),
 ]

@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const handleLogin = async () => {
     try {
-      setLoading(true);           
-      setError("");               
+      setLoading(true);
+      setError("");
 
-      const response = await fetch("https://ngo-cms-bwvq.onrender.com/login/", {
+      const response = await fetch(`${API_BASE_URL}/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,17 +26,18 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("token", data.access);
+        localStorage.setItem("refreshToken", data.refresh || "");
+        localStorage.setItem("email", data.email || email);
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("email", email);
         navigate("/dashboard");
       } else {
-        setError(data.message);
+        setError(data.message || "Login failed");
       }
-
-      setLoading(false);        
     } catch (err) {
       console.error(err);
-      setError("Something went wrong");
+      setError("Server not reachable");
+    } finally {
       setLoading(false);
     }
   };

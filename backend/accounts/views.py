@@ -1,20 +1,39 @@
-from django.http import JsonResponse
-import json
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 from .models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
-@csrf_exempt
+
+@api_view(['POST'])
 def login_view(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
+    email = request.data.get("email")
+    password = request.data.get("password")
 
-        email = data.get("email")
-        password = data.get("password")
+    try:
+        user = User.objects.get(email=email)
 
-        try:
-            user = User.objects.get(email=email, password=password)
-            return JsonResponse({"message": "Login successful"})
-        except User.DoesNotExist:
-            return JsonResponse({"message": "Invalid credentials"}, status=400)
+        if user.check_password(password):
+            refresh = RefreshToken.for_user(user)
 
-    return JsonResponse({"message": "Only POST allowed"})
+            return Response({
+                "message": "Login successful",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            })
+        else:
+            return Response({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+    except User.DoesNotExist:
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_view(request):
+    return Response({
+        "message": "Welcome to dashboard",
+        "user": request.user.email
+    })

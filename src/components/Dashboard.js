@@ -1,19 +1,45 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+
 function Dashboard() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [user, setUser] = useState("");
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const token = localStorage.getItem("token");
 
-    if (!isLoggedIn) {
+    if (!token) {
       navigate("/");
-    } else {
-      const userEmail = localStorage.getItem("email");
-      setEmail(userEmail);
+      return;
     }
+
+    const loadDashboard = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          localStorage.clear();
+          navigate("/");
+          return;
+        }
+
+        const data = await response.json();
+        setMessage(data.message || "Welcome to dashboard");
+        setUser(data.user || localStorage.getItem("email") || "");
+      } catch (error) {
+        console.error(error);
+        navigate("/");
+      }
+    };
+
+    loadDashboard();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -28,8 +54,9 @@ function Dashboard() {
     alignItems: "center",
     marginTop: "100px"
   }}>
-    <h1>Welcom to Dashboard</h1>
-    <h3>Hello, {email}</h3>
+    <h1>Welcome to Dashboard</h1>
+    {message && <p>{message}</p>}
+    <h3>Hello, {user}</h3>
 
     <button
       onClick={handleLogout}

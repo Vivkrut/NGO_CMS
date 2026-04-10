@@ -86,6 +86,18 @@ npm install
 npm start
 ```
 
+Create a `.env` file in the frontend root:
+
+```
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000
+```
+
+For live deployment (for example Vercel), set:
+
+```
+REACT_APP_API_BASE_URL=https://ngo-cms-bwvq.onrender.com
+```
+
 ---
 
 ## 🌐 Live Demo
