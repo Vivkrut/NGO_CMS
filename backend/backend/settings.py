@@ -127,9 +127,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "https://ngo-cms-sigma.vercel.app",
+    "https://ngo-j86xlhou5-vivkruts-projects.vercel.app",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*-vivkruts-projects\.vercel\.app$",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "https://ngo-cms-sigma.vercel.app",
+    "https://ngo-j86xlhou5-vivkruts-projects.vercel.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
