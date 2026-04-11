@@ -3,24 +3,46 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
-function Login() {
+function Register() {
+  const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`${API_BASE_URL}/login/`, {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!fullName.trim() || !normalizedEmail || !password) {
+        setError("Full name, email, and password are required");
+        return;
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(normalizedEmail)) {
+        setError("Enter a valid email address");
+        return;
+      }
+
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/register/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          full_name: fullName,
+          email: normalizedEmail,
+          password,
+        }),
       });
 
       const data = await response.json();
@@ -32,7 +54,7 @@ function Login() {
         localStorage.setItem("isLoggedIn", "true");
         navigate("/dashboard");
       } else {
-        setError(data.message || "Login failed");
+        setError(data.message || "Registration failed");
       }
     } catch (err) {
       console.error(err);
@@ -44,37 +66,43 @@ function Login() {
 
   return (
     <div style={{
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-  background: "linear-gradient(to right, #4facfe, #00f2fe)"
-}}>
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      background: "linear-gradient(to right, #4facfe, #00f2fe)"
+    }}>
       <div style={{
         background: "white",
         padding: "30px",
         borderRadius: "10px",
         boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        width: "300px"
+        width: "320px"
       }}>
-
         <h2 style={{ textAlign: "center", marginBottom: "5px" }}>
-  🌱 Hope Foundation
-</h2>
+          Create Account
+        </h2>
+        <p style={{ textAlign: "center", fontSize: "13px", color: "gray", marginBottom: "20px" }}>
+          Join Hope Foundation
+        </p>
 
-<p style={{ textAlign: "center", fontSize: "13px", color: "gray", marginBottom: "20px" }}>
-  Empowering lives through education & care
-</p>
+        <input
+          type="text"
+          placeholder="Full Name"
+          onChange={(e) => setFullName(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
+        />
+
         <input
           type="email"
-          placeholder="Enter Email"
+          placeholder="Email"
           onChange={(e) => setEmail(e.target.value)}
           style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
         />
 
         <input
           type="password"
-          placeholder="Enter Password"
+          placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
           style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
         />
@@ -82,24 +110,24 @@ function Login() {
         {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
         <button
-  onClick={handleLogin}
-  disabled={loading}
-  style={{
-    width: "100%",
-    padding: "10px",
-    backgroundColor: loading ? "#999" : "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontWeight: "bold"
-  }}
->
-  {loading ? "Logging in..." : "Login"}
-</button>
+          onClick={handleRegister}
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "10px",
+            backgroundColor: loading ? "#999" : "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontWeight: "bold"
+          }}
+        >
+          {loading ? "Creating..." : "Register"}
+        </button>
 
         <button
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/")}
           style={{
             marginTop: "10px",
             width: "100%",
@@ -111,27 +139,11 @@ function Login() {
             cursor: "pointer"
           }}
         >
-          Create Account
-        </button>
-
-        <button
-          onClick={() => navigate("/forgot-password")}
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "transparent",
-            color: "#007bff",
-            border: "none",
-            cursor: "pointer",
-            textDecoration: "underline"
-          }}
-        >
-          Forgot Password?
+          Back to Login
         </button>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Register;

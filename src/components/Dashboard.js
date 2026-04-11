@@ -33,6 +33,9 @@ function Dashboard() {
         const data = await response.json();
         setMessage(data.message || "Welcome to dashboard");
         setUser(data.user || localStorage.getItem("email") || "");
+        if (data.role) {
+          localStorage.setItem("role", data.role);
+        }
       } catch (error) {
         console.error(error);
         navigate("/");
@@ -57,6 +60,22 @@ function Dashboard() {
     <h1>Welcome to Dashboard</h1>
     {message && <p>{message}</p>}
     <h3>Hello, {user}</h3>
+
+    {localStorage.getItem("role") === "admin" && (
+      <button
+        onClick={() => navigate("/admin/users")}
+        style={{
+          marginTop: "10px",
+          padding: "10px 20px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "5px"
+        }}
+      >
+        Manage Users (Admin)
+      </button>
+    )}
 
     <button
       onClick={handleLogout}
