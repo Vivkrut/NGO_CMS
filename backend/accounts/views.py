@@ -1,3 +1,4 @@
+import logging
 import os
 
 from django.utils.encoding import force_bytes, force_str
@@ -13,6 +14,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
+
+logger = logging.getLogger(__name__)
 
 
 class IsAdminRole(permissions.BasePermission):
@@ -108,16 +111,20 @@ def forgot_password_view(request):
     uid = urlsafe_base64_encode(force_bytes(user.id))
     reset_link = f"{frontend_base}/reset-password/{uid}/{token}"
 
-    send_mail(
-        subject="Reset your password",
-        message=(
-            "We received a password reset request for your account. "
-            f"Use this link to set a new password: {reset_link}"
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject="Reset your password",
+            message=(
+                "We received a password reset request for your account. "
+                f"Use this link to set a new password: {reset_link}"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Failed to send password reset email")
+        return Response({"message": "Email service error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response(response_payload)
 
