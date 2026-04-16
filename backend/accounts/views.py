@@ -112,16 +112,33 @@ def forgot_password_view(request):
     reset_link = f"{frontend_base}/reset-password/{uid}/{token}"
 
     try:
-        send_mail(
-            subject="Reset your password",
-            message=(
-                "We received a password reset request for your account. "
-                f"Use this link to set a new password: {reset_link}"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        resend_api_key = os.environ.get("RESEND_API_KEY")
+        resend_from_email = os.environ.get("RESEND_FROM_EMAIL", settings.DEFAULT_FROM_EMAIL)
+
+        if resend_api_key:
+            import resend
+
+            resend.api_key = resend_api_key
+            resend.Emails.send({
+                "from": resend_from_email,
+                "to": [user.email],
+                "subject": "Reset your password",
+                "text": (
+                    "We received a password reset request for your account. "
+                    f"Use this link to set a new password: {reset_link}"
+                ),
+            })
+        else:
+            send_mail(
+                subject="Reset your password",
+                message=(
+                    "We received a password reset request for your account. "
+                    f"Use this link to set a new password: {reset_link}"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
     except Exception:
         logger.exception("Failed to send password reset email")
         return Response({"message": "Email service error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
