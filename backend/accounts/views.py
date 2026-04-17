@@ -1,11 +1,5 @@
 import logging
 import os
-
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.conf import settings
-from django.core.mail import send_mail
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
@@ -97,75 +91,28 @@ def forgot_password_view(request):
     if not email:
         return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    frontend_base = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
+    # Insecure flow: just confirm the email exists and allow direct reset next.
+    if not User.objects.filter(email=email).exists():
+        return Response({"message": "If the account exists, you can reset the password."})
 
-    # Always return a generic message to avoid email enumeration.
-    response_payload = {"message": "If the account exists, a reset link will be sent."}
-
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response(response_payload)
-
-    token = PasswordResetTokenGenerator().make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.id))
-    reset_link = f"{frontend_base}/reset-password/{uid}/{token}"
-
-    try:
-        resend_api_key = os.environ.get("RESEND_API_KEY")
-        resend_from_email = os.environ.get("RESEND_FROM_EMAIL", settings.DEFAULT_FROM_EMAIL)
-
-        if resend_api_key:
-            import resend
-
-            resend.api_key = resend_api_key
-            resend.Emails.send({
-                "from": resend_from_email,
-                "to": [user.email],
-                "subject": "Reset your password",
-                "text": (
-                    "We received a password reset request for your account. "
-                    f"Use this link to set a new password: {reset_link}"
-                ),
-            })
-        else:
-            send_mail(
-                subject="Reset your password",
-                message=(
-                    "We received a password reset request for your account. "
-                    f"Use this link to set a new password: {reset_link}"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-    except Exception:
-        logger.exception("Failed to send password reset email")
-        return Response({"message": "Email service error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    return Response(response_payload)
+    return Response({"message": "Email verified. You can now set a new password."})
 
 
 @api_view(['POST'])
 def reset_password_view(request):
-    uid = request.data.get("uid")
-    token = request.data.get("token")
+    email = (request.data.get("email") or "").strip().lower()
     new_password = request.data.get("new_password")
 
-    if not uid or not token or not new_password:
-        return Response({"message": "uid, token, and new_password are required"}, status=status.HTTP_400_BAD_REQUEST)
+    if not email or not new_password:
+        return Response({"message": "email and new_password are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     if len(new_password) < 8:
         return Response({"message": "Password must be at least 8 characters"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user_id = force_str(urlsafe_base64_decode(uid))
-        user = User.objects.get(id=user_id)
-    except (User.DoesNotExist, ValueError, TypeError):
-        return Response({"message": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not PasswordResetTokenGenerator().check_token(user, token):
-        return Response({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"message": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
 
     user.set_password(new_password)
     user.save(update_fields=["password"])

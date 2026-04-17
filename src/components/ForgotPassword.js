@@ -6,11 +6,15 @@ const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:80
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const [step, setStep] = useState("verify");
+
+  const handleVerify = async () => {
     try {
       setLoading(true);
       setError("");
@@ -36,7 +40,57 @@ function ForgotPassword() {
         return;
       }
 
-      setMessage(data.message || "If the account exists, a reset link will be sent.");
+      setMessage(data.message || "Email verified. You can now set a new password.");
+      setStep("reset");
+    } catch (err) {
+      console.error(err);
+      setError("Server not reachable");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setMessage("");
+
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail || !password || !confirmPassword) {
+        setError("Email and password fields are required");
+        return;
+      }
+
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reset-password/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          new_password: password,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "Unable to reset password");
+        return;
+      }
+
+      setMessage(data.message || "Password reset successful");
+      setTimeout(() => navigate("/"), 1200);
     } catch (err) {
       console.error(err);
       setError("Server not reachable");
@@ -62,7 +116,7 @@ function ForgotPassword() {
       }}>
         <h2 style={{ textAlign: "center", marginBottom: "10px" }}>Forgot Password</h2>
         <p style={{ textAlign: "center", fontSize: "13px", color: "gray", marginBottom: "20px" }}>
-          Enter your email to generate a reset link
+          Enter your email and set a new password
         </p>
 
         <input
@@ -72,11 +126,29 @@ function ForgotPassword() {
           style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
         />
 
+        {step === "reset" && (
+          <>
+            <input
+              type="password"
+              placeholder="New Password"
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
+            />
+          </>
+        )}
+
         {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
         {message && <p style={{ color: "green", textAlign: "center" }}>{message}</p>}
 
         <button
-          onClick={handleSubmit}
+          onClick={step === "verify" ? handleVerify : handleReset}
           disabled={loading}
           style={{
             width: "100%",
@@ -89,7 +161,7 @@ function ForgotPassword() {
             fontWeight: "bold"
           }}
         >
-          {loading ? "Sending..." : "Generate Link"}
+          {loading ? "Processing..." : step === "verify" ? "Continue" : "Reset Password"}
         </button>
 
         <button

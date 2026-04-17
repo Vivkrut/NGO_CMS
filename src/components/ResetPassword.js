@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
 function ResetPassword() {
   const navigate = useNavigate();
-  const { uid, token } = useParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -33,14 +33,19 @@ function ResetPassword() {
         return;
       }
 
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail) {
+        setError("Email is required");
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/reset-password/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uid,
-          token,
+          email: normalizedEmail,
           new_password: password,
         }),
       });
@@ -80,6 +85,13 @@ function ResetPassword() {
         <p style={{ textAlign: "center", fontSize: "13px", color: "gray", marginBottom: "20px" }}>
           Enter your new password
         </p>
+
+        <input
+          type="email"
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "15px" }}
+        />
 
         <input
           type="password"

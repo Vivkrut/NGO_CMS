@@ -152,7 +152,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000")
 
-# Email (configure these in production environment variables)
+
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
@@ -161,9 +161,9 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@hopefoundation.org")
 
-# Resend (preferred for live email via HTTPS)
+
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", DEFAULT_FROM_EMAIL)
+RESEND_FROM = os.environ.get("RESEND_FROM", DEFAULT_FROM_EMAIL)
 
 from datetime import timedelta
 
