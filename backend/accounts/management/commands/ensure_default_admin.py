@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
 
+import os
+
 from accounts.models import User
 
 
@@ -7,9 +9,13 @@ class Command(BaseCommand):
     help = "Ensure the default admin user exists with the required credentials."
 
     def handle(self, *args, **options):
-        email = "c_admin@gmail.com"
-        password = "Veer@3201"
-        full_name = "Default Admin"
+        email = os.environ.get("DEFAULT_ADMIN_EMAIL")
+        password = os.environ.get("DEFAULT_ADMIN_PASSWORD")
+        full_name = os.environ.get("DEFAULT_ADMIN_NAME", "Default Admin")
+
+        if not email or not password:
+            self.stdout.write(self.style.WARNING("DEFAULT_ADMIN_EMAIL or DEFAULT_ADMIN_PASSWORD not set."))
+            return
 
         user, created = User.objects.get_or_create(
             email=email,

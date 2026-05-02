@@ -165,6 +165,11 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@hopefoundati
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM = os.environ.get("RESEND_FROM", DEFAULT_FROM_EMAIL)
 
+# Default admin bootstrap (for production)
+DEFAULT_ADMIN_EMAIL = os.environ.get("DEFAULT_ADMIN_EMAIL", "")
+DEFAULT_ADMIN_PASSWORD = os.environ.get("DEFAULT_ADMIN_PASSWORD", "")
+DEFAULT_ADMIN_NAME = os.environ.get("DEFAULT_ADMIN_NAME", "Default Admin")
+
 from datetime import timedelta
 
 REST_FRAMEWORK = {
